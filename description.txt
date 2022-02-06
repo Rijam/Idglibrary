@@ -1,0 +1,2 @@
+This is library of functions for use in my mods. (Ophioid, and SGAmod, check em out!)
+If you use cheat sheet, this mod adds some dev weapons that modders may find handy, if you just want to mess around with the debuffs of this mod.
