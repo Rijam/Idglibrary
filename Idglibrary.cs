@@ -957,7 +957,7 @@ namespace Idglibrary
             if (type == MessageType.IdgMessage) {
                 int type2 = reader.ReadInt32();
 
-                if (type2 == 0 && Main.netMode == 1) {
+                if (type2 == 0 && Main.netMode == NetmodeID.MultiplayerClient) {
                     //Idglib.Chat("(client) got info, adding buff",255,255,255);
                     int ply = reader.ReadInt32();
                     int buff = reader.ReadInt32();
@@ -973,7 +973,7 @@ namespace Idglibrary
 
                     for (int num172 = 0; num172 < npcx.buffid.Count; num172 += 1) {
                         //Idglib.Chat("(server) sending buff info to clients",255,255,255);
-                        if (Main.netMode == 2) {
+                        if (Main.netMode == NetmodeID.Server) {
                             ModPacket packet = Idglib.Instance.GetPacket();
                             packet.Write((byte)MessageType.IdgMessage);
                             packet.Write(0);
@@ -997,7 +997,7 @@ namespace Idglibrary
                         for (int num172 = 0; num172 < npcx.buffid.Count; num172 += 1)
                         {
                             //Idglib.Chat("(server) sending buff info to clients",255,255,255);
-                            if (Main.netMode == 2)
+                            if (Main.netMode == NetmodeID.Server)
                             {
                                 ModPacket packet = Idglib.Instance.GetPacket();
                                 packet.Write((byte)MessageType.IdgMessage);
@@ -1015,25 +1015,29 @@ namespace Idglibrary
                     //Idglib.Chat("(server) Someone got hit, send info to server",255,255,255);
                     int npcid = reader.ReadInt32();
                     int projectileid = reader.ReadInt32();
-                    IdgProjectiles npcx = Main.projectile[projectileid].GetGlobalProjectile<IdgProjectiles>();
+                    if (projectileid >= 0 && projectileid < Main.maxProjectiles)
+                    {
+                        IdgProjectiles npcx = Main.projectile[projectileid].GetGlobalProjectile<IdgProjectiles>();
 
-                    for (int num172 = 0; num172 < npcx.buffid.Count; num172 += 1) {
-                        //Idglib.Chat("(server) sending buff info to clients",255,255,255);
-                        if (Main.netMode == 2) {
-                            ModPacket packet = Idglib.Instance.GetPacket();
-                            packet.Write((byte)MessageType.IdgMessage);
-                            packet.Write(-1);
-                            packet.Write(npcid);
-                            packet.Write(npcx.buffid[num172]);
-                            packet.Write(npcx.bufftime[num172]);
-                            packet.Send();
+                        for (int num172 = 0; num172 < npcx.buffid.Count; num172 += 1)
+                        {
+                            //Idglib.Chat("(server) sending buff info to clients",255,255,255);
+                            if (Main.netMode == NetmodeID.Server)
+                            {
+                                ModPacket packet = Idglib.Instance.GetPacket();
+                                packet.Write((byte)MessageType.IdgMessage);
+                                packet.Write(-1);
+                                packet.Write(npcid);
+                                packet.Write(npcx.buffid[num172]);
+                                packet.Write(npcx.bufftime[num172]);
+                                packet.Send();
+                            }
                         }
                     }
-
                 }
 
 
-                if (type2 == 4 && Main.netMode == 2) {// Client Item (server)
+                if (type2 == 4 && Main.netMode == NetmodeID.Server) {// Client Item (server)
                     int x = reader.ReadInt32();
                     int y = reader.ReadInt32();
                     int width = reader.ReadInt32();
@@ -1052,7 +1056,7 @@ namespace Idglibrary
                 }
 
 
-                if (type2 == -1 && Main.netMode == 1) {// add buff (client)
+                if (type2 == -1 && Main.netMode == NetmodeID.MultiplayerClient) {// add buff (client)
                     Idglib.Instance.Logger.Debug("add buff (client)");
                     //Idglib.Chat("(client) got info, adding buff",255,255,255);
                     int npc = reader.ReadInt32();
@@ -1061,14 +1065,14 @@ namespace Idglibrary
                     Main.npc[npc].AddBuff(buff, time, true);
                 }
 
-                if (type2 == -2 && Main.netMode == 1) {// EZShop (client)
+                if (type2 == -2 && Main.netMode == NetmodeID.MultiplayerClient) {// EZShop (client)
                     Idglib.Instance.Logger.Debug("EZShop (client)");
                     int npc = reader.ReadInt32();
                     int item = reader.ReadInt32();
                     IdgWorld.EZShopInternal(npc, item, true);
                 }
 
-                if (type2 == -3 && Main.netMode == 1) {// CLient Item (client)
+                if (type2 == -3 && Main.netMode == NetmodeID.MultiplayerClient) {// CLient Item (client)
                     Idglib.Instance.Logger.Debug("CLient Item (client)");
                     Item.NewItem(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                 }

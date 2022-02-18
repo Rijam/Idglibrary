@@ -1,5 +1,5 @@
 author = IDGCaptainRussia
-version = 3.15
+version = 3.16
 displayName = Idglib
 buildIgnore = .vs\*, .git\*, ignore\*, .gitignore, .gitattributes, *.MD, *.csproj, *.user, obj\*, bin\*
 homepage = https://forums.terraria.org/index.php?threads/base-mod-idglibrary-a-library-for-coders.72616/
