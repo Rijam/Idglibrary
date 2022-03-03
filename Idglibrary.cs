@@ -91,12 +91,17 @@ namespace Idglibrary
 
         public override void OnHitNPC(Projectile projectile, NPC npc, int damage, float knockback, bool crit)
         {
-            if ((projectile.hostile != npc.friendly) || (!projectile.hostile && !npc.friendly)) {
-                if (Main.netMode == 0) {
-                    for (int num172 = 0; num172 < buffid.Count; num172 += 1) {
+            if ((projectile.hostile != npc.friendly) || (!projectile.hostile && !npc.friendly))
+            {
+                if (Main.netMode == NetmodeID.SinglePlayer)
+                {
+                    for (int num172 = 0; num172 < buffid.Count; num172 += 1)
+                    {
                         npc.AddBuff(buffid[num172], bufftime[num172], true);
-                    } }
-                if (Main.netMode == 1) {
+                    }
+                }
+                if (Main.netMode == NetmodeID.MultiplayerClient)
+                {
                     //Idglib.Chat("(client) get server of this npc test",255,255,255);
                     ModPacket packet = Idglib.Instance.GetPacket();
                     packet.Write((byte)MessageType.IdgMessage);
@@ -110,12 +115,17 @@ namespace Idglibrary
 
         public override void OnHitPlayer(Projectile projectile, Player player, int damage, bool crit)
         {
-            if (projectile.hostile == true) {
-                if (Main.netMode == 0) {
-                    for (int num172 = 0; num172 < buffid.Count; num172 += 1) {
+            if (projectile.hostile == true)
+            {
+                if (Main.netMode == NetmodeID.SinglePlayer)
+                {
+                    for (int num172 = 0; num172 < buffid.Count; num172 += 1)
+                    {
                         player.AddBuff(buffid[num172], bufftime[num172], true);
-                    } }
-                if (Main.netMode == 1) {
+                    }
+                }
+                if (Main.netMode == NetmodeID.MultiplayerClient)
+                {
                     //Idglib.Chat("(client) get server of this npc test",255,255,255);
                     ModPacket packet = Idglib.Instance.GetPacket();
                     packet.Write((byte)MessageType.IdgMessage);
@@ -986,7 +996,7 @@ namespace Idglibrary
 
                 }
 
-                if (type2 == 2 && Main.netMode == 2) {
+                if (type2 == 2 && Main.netMode == NetmodeID.Server) {
                     //Idglib.Chat("(server) Someone got hit, send info to server",255,255,255);
                     int playerid = reader.ReadInt32();
                     int projectileid = reader.ReadInt32();
@@ -1011,7 +1021,7 @@ namespace Idglibrary
                     }
                 }
 
-                if (type2 == 3 && Main.netMode == 2) {
+                if (type2 == 3 && Main.netMode == NetmodeID.Server) {
                     //Idglib.Chat("(server) Someone got hit, send info to server",255,255,255);
                     int npcid = reader.ReadInt32();
                     int projectileid = reader.ReadInt32();
