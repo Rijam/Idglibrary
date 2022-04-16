@@ -6,19 +6,19 @@ namespace Idglibrary.Buffs
 {
 	public class RadiationOne: ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Radiation I");
 			Description.SetDefault("You are suffering minor radiation poisoning");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			idgplayer.radationlevel += 1;
 		}
 
@@ -30,21 +30,17 @@ namespace Idglibrary.Buffs
 
 	public class LimboFading : ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Limbo Fading");
 			Description.SetDefault("Your existance is fading...");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
-		public override bool Autoload(ref string name, ref string texture)
-		{
-			texture = "Idglibrary/Buffs/SoulDrain";
-			return true;
-		}
+		public override string Texture => "Idglibrary/Buffs/SoulDrain";
 
 		public override void ModifyBuffTip(ref string tip, ref int rare)
 		{
@@ -54,7 +50,7 @@ namespace Idglibrary.Buffs
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			idgplayer.radationlevel += player.HasBuff(BuffID.ChaosState) ? 16 : 4;
 			idgplayer.limbo = true;
 		}

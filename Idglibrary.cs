@@ -12,11 +12,13 @@ using Terraria.Localization;
 using Terraria.GameContent.Generation;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-using Terraria.World.Generation;
+using Terraria.WorldBuilding;
 using Terraria.ObjectData;
 using Terraria.Graphics.Effects;
 using Terraria.Graphics.Shaders;
 using Terraria.Utilities;
+using Terraria.Audio;
+using Terraria.Chat;
 
 //This is a libary of functions I (IDGCaptainRussia) wrote for my own mod and am now bringing it everywhere.
 
@@ -209,7 +211,7 @@ namespace Idglibrary
             }
         }
 
-        public override void NPCLoot(NPC npc)
+        public override void OnKill(NPC npc)
         {
             /*if (npc.type==NPCID.SkeletronHead){
             Idglib.EasyShop(NPCID.Merchant,ItemID.FlurryBoots);
@@ -227,7 +229,7 @@ namespace Idglibrary
 
 
 
-    public class IdgWorld : ModWorld
+    public class IdgWorld : ModSystem
     {
         #region vars
         public static List<int> shopitem = new List<int>();
@@ -237,7 +239,7 @@ namespace Idglibrary
         #endregion
 
 
-        public override void Initialize()
+        public override void OnWorldLoad()
         {
             //nothing yet
             IdgWorld.nonsavedshopitem = new List<int>();
@@ -245,14 +247,14 @@ namespace Idglibrary
             Idglib.EasyShop(NPCID.Merchant, 17);
         }
 
-        public override TagCompound Save()
+        public override void SaveWorldData(TagCompound tag)
         {
             TagCompound IDGSave = new TagCompound();
             IDGSave["idgsavecomplete"] = true;
-            return IDGSave;
+            //return IDGSave;
         }
 
-        public override void Load(TagCompound IDGSave)
+        public override void LoadWorldData(TagCompound IDGSave)
         {
             //nothing atm
         }
@@ -271,6 +273,11 @@ namespace Idglibrary
                 return IdgWorld.shopitem.Count;
             else
                 return -1;
+        }
+
+        public override void PreSaveAndQuit()
+        {
+            Idglib.nightmaremode = 0;
         }
 
     }
@@ -314,16 +321,16 @@ namespace Idglibrary
         public Idglib()
         {
 
-            Properties = new ModProperties()
+            /*Properties = new ModProperties()
             {
                 Autoload = true,
                 AutoloadGores = true,
                 AutoloadSounds = true
-            };
+            };*/
         }
         public static int GetSGAmodNightmareMode()
         {
-            if (ModLoader.GetMod("SGAmod") == null)
+            if (ModLoader.TryGetMod("SGAmod", out Mod sgamod) == false)
                 return 0;
             else
                 return SGAmodNightmareMode;
@@ -335,11 +342,6 @@ namespace Idglibrary
             {
                 return Idglib.nightmaremode;
             }
-        }
-
-        public override void PreSaveAndQuit()
-        {
-            Idglib.nightmaremode = 0;
         }
 
         public override void Load()
@@ -375,19 +377,21 @@ namespace Idglibrary
             nightmaremode = 0;
         }
 
-        public override void UpdateMusic(ref int music, ref MusicPriority priority)
+        // Completely removed
+        // Use `public class UpdateMusic : ModSceneEffect` or something.
+        /*public override void UpdateMusic(ref int music, ref SceneEffectPriority priority) 
         {
             if (Main.netMode != NetmodeID.Server)
             {
                 Player local = Main.LocalPlayer;
                 for (int i = 0; i < local.inventory.Length; i += 1)
                 {
-                    if (!local.inventory[i].IsAir && local.inventory[i].favorited && local.inventory[i].modItem != null && local.inventory[i].modItem is MagicMusicBox magic)
+                    if (!local.inventory[i].IsAir && local.inventory[i].favorited && local.inventory[i].ModItem != null && local.inventory[i].ModItem is MagicMusicBox magic)
                     {
                         if (magic.myMusic > -1)
                         {
                             music = magic.myMusic;
-                            priority = MusicPriority.BossHigh;
+                            priority = SceneEffectPriority.BossHigh;
                             break;
                         }
                     }
@@ -395,13 +399,13 @@ namespace Idglibrary
                 }
 
             }
-        }
+        }*/
 
         public static int RaycastDown(int x, int y)
         {
             x = (int)MathHelper.Clamp(x, 0, Main.maxTilesX);
             y = (int)MathHelper.Clamp(y, 0, Main.maxTilesY);
-             while (!((Main.tile[x, y] != null && y < Main.maxTilesY - 5 && (Main.tile[x, y].nactive() && (Main.tileSolid[(int)Main.tile[x, y].type] || Main.tileSolidTop[(int)Main.tile[x, y].type] && (int)Main.tile[x, y].frameY == 0)))))
+             while (!((Main.tile[x, y] != null && y < Main.maxTilesY - 5 && (Main.tile[x, y].HasUnactuatedTile && (Main.tileSolid[(int)Main.tile[x, y].TileType] || Main.tileSolidTop[(int)Main.tile[x, y].TileType] && (int)Main.tile[x, y].TileFrameY == 0)))))
             {
                 y++;
             }
@@ -466,7 +470,7 @@ namespace Idglibrary
 
         public static void DrawTether(string Tex, Vector2 Start, Vector2 End, float Alpha = 1f, float scaleX = 1f, float scaleY = 1f, Color coloroverride = default(Color))
         {
-            DrawTether(ModContent.GetTexture(Tex), Start, End, Alpha = 1f, scaleX, scaleY, coloroverride);
+            DrawTether((Texture2D)ModContent.Request<Texture2D>(Tex), Start, End, Alpha = 1f, scaleX, scaleY, coloroverride);
         }
 
         public static void DrawTether(Texture2D Tex, Vector2 Start, Vector2 End, float Alpha = 1f, float scaleX = 1f, float scaleY = 1f, Color coloroverride = default(Color))
@@ -522,7 +526,7 @@ namespace Idglibrary
         //Thanks man, I was always curious how Terraria did Skeletron arms...
         public static void DrawSkeletronLikeArms(SpriteBatch spriteBatch, string texString, Vector2 selfPos, Vector2 centerPos, float selfPad = 0f, float centerPad = 0f, float direction = 0f)
         {
-            DrawSkeletronLikeArms(spriteBatch, ModContent.GetTexture(texString), selfPos, centerPos, selfPad, centerPad, direction);
+            DrawSkeletronLikeArms(spriteBatch, (Texture2D)ModContent.Request<Texture2D>(texString), selfPos, centerPos, selfPad, centerPad, direction);
         }
 
         public static void DrawSkeletronLikeArms(SpriteBatch spriteBatch, Texture2D tex, Vector2 selfPos, Vector2 centerPos, float selfPad = 0f, float centerPad = 0f, float direction = 0f)
@@ -531,7 +535,7 @@ namespace Idglibrary
             //Pos parameters should be Entity.Center
             //Pad parameters are actually just y offsets
             //direction determines in what direction the elbow bends and by how much (-1 to 1 are preferred)
-            if (tex == null) tex = Main.boneArmTexture;
+            if (tex == null) tex = (Texture2D)Terraria.GameContent.TextureAssets.BoneArm;
             Vector2 drawPos = selfPos;
             drawPos += new Vector2(-5f * direction, selfPad);
             centerPos.Y += -tex.Height / 2 + centerPad;
@@ -596,7 +600,7 @@ namespace Idglibrary
             else
             {
                 NetworkText text = NetworkText.FromLiteral(message);
-                NetMessage.BroadcastChatMessage(text, new Color(color1, color2, color3));
+                ChatHelper.BroadcastChatMessage(text, new Color(color1, color2, color3));
             }
         }
 
@@ -660,7 +664,7 @@ namespace Idglibrary
         public static void NewItemClient(int x, int y, int width, int height, int item)
         {
             if (Main.netMode != 1) {
-                Item.NewItem(x, y, width, height, item);
+                Item.NewItem(null, x, y, width, height, item); //Passing null for IEntitySource will work, but it may break other functionality
             } else {
                 ModPacket packet = Idglib.Instance.GetPacket();
                 packet.Write((byte)MessageType.IdgMessage);
@@ -679,7 +683,7 @@ namespace Idglibrary
         {
             if (Main.netMode != 2)
             {
-                Main.PlaySound(type, (int)here.X, (int)here.Y, style);
+                SoundEngine.PlaySound(type, (int)here.X, (int)here.Y, style);
             }
         }
 
@@ -714,7 +718,7 @@ namespace Idglibrary
                 offsetAngle = (startAngle + globalangularoffset) + deltaAngle * i;
                 double offsetAngle2 = (startAngle + globalangularoffset) - (deltaAngle * i);
                 if (centershot == true || i > 0) {
-                    int proj = Projectile.NewProjectile(vector8.X, vector8.Y, baseSpeed * (float)Math.Sin(offsetAngle), baseSpeed * (float)Math.Cos(offsetAngle), type, damage, Speed, 0);
+                    int proj = Projectile.NewProjectile(null, vector8.X, vector8.Y, baseSpeed * (float)Math.Sin(offsetAngle), (int)(baseSpeed * (float)Math.Cos(offsetAngle)), type, damage, Speed, 0);
                     Main.projectile[proj].friendly = false;
                     Main.projectile[proj].hostile = true;
                     Main.projectile[proj].tileCollide = tilecollidez;
@@ -723,7 +727,7 @@ namespace Idglibrary
                     returns.Insert(returns.Count, Main.projectile[proj]);
                 }
                 if (i > 0) {
-                    int proj2 = Projectile.NewProjectile(vector8.X, vector8.Y, baseSpeed * (float)Math.Sin(offsetAngle2), baseSpeed * (float)Math.Cos(offsetAngle2), type, damage, Speed, 0);
+                    int proj2 = Projectile.NewProjectile(null, vector8.X, vector8.Y, baseSpeed * (float)Math.Sin(offsetAngle2), (int)(baseSpeed * (float)Math.Cos(offsetAngle2)), type, damage, Speed, 0);
                     Main.projectile[proj2].friendly = false;
                     Main.projectile[proj2].hostile = true;
                     Main.projectile[proj2].tileCollide = tilecollidez;
@@ -1084,7 +1088,7 @@ namespace Idglibrary
 
                 if (type2 == -3 && Main.netMode == NetmodeID.MultiplayerClient) {// CLient Item (client)
                     Idglib.Instance.Logger.Debug("CLient Item (client)");
-                    Item.NewItem(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                    Item.NewItem(null, reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32()); //Passing null for IEntitySource will work, but it may break other functionality.
                 }
 
                 if (type2 == 10 && Main.netMode == NetmodeID.Server) {//Sync Projectile pt1 (server)
@@ -1121,11 +1125,11 @@ namespace Idglibrary
                         Main.projectile[projectileid].friendly = friendly;
                         Main.projectile[projectileid].hostile = hostile;
                         Main.projectile[projectileid].usesLocalNPCImmunity = usesLocalNPCImmunity;
-                        Main.projectile[projectileid].magic = magic;
-                        Main.projectile[projectileid].thrown = thrown;
-                        Main.projectile[projectileid].minion = minion;
-                        Main.projectile[projectileid].melee = melee;
-                        Main.projectile[projectileid].ranged = ranged;
+                        Main.projectile[projectileid].DamageType = DamageClass.Magic;
+                        Main.projectile[projectileid].DamageType = DamageClass.Throwing;
+                        Main.projectile[projectileid].minion = minion; //DamageClass.Summon ?
+                        Main.projectile[projectileid].DamageType = DamageClass.Melee;
+                        Main.projectile[projectileid].DamageType = DamageClass.Ranged;
                         Main.projectile[projectileid].penetrate = penetrate;
                         Main.projectile[projectileid].localNPCHitCooldown = localNPCHitCooldown;
                         Main.projectile[projectileid].scale = scale;
@@ -1259,7 +1263,7 @@ namespace Idglibrary
 
         public bool IsHotbarCurse(Item item, Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             if (idgplayer.hotbarcurse > -1)
             {
                 for (int i = 0; i < 10; i += 1)
@@ -1295,12 +1299,12 @@ namespace Idglibrary
         {
             if (!Main.gameMenu)
             {
-                IdgPlayer idgplayer = Main.LocalPlayer.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+                IdgPlayer idgplayer = Main.LocalPlayer.GetModPlayer<IdgPlayer>();
                 if (idgplayer.hotbarcurse > -1 || idgplayer.itemcurse > -1)
                 {
                     if (IsHotbarCurse(item, Main.LocalPlayer))
                     {
-                        Texture2D texture = Main.cdTexture;
+                        Texture2D texture = (Texture2D)Terraria.GameContent.TextureAssets.Cd;
                         Vector2 slotSize = new Vector2(52f, 52f);
                         position -= slotSize * Main.inventoryScale / 2f - frame.Size() * scale / 2f;
                         Vector2 drawPos = position + slotSize * Main.inventoryScale / 2f;
@@ -1313,15 +1317,15 @@ namespace Idglibrary
 
         public override bool CanUseItem(Item item, Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             if (IsHotbarCurse(item, player))
                 return false;
 
             if (idgplayer.bossmod != null)
             {
-                if (item.modItem != null)
+                if (item.ModItem != null)
                 {
-                    if (item.modItem.mod == idgplayer.bossmod)
+                    if (item.ModItem.Mod == idgplayer.bossmod)
                         return true;
                     else
                         return false;
@@ -1333,22 +1337,22 @@ namespace Idglibrary
 
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            if (item.modItem != null) {
-                if (((item.modItem).GetType()).BaseType != null) {
-                    string itemclass = ((item.modItem).GetType().BaseType).Name;
+            if (item.ModItem != null) {
+                if (((item.ModItem).GetType()).BaseType != null) {
+                    string itemclass = ((item.ModItem).GetType().BaseType).Name;
                     //Main.NewText(itemclass,100,100,100);F
                     if (itemclass == "IdgDebugItem") {
 
-                        Color c = Main.hslToRgb((float)(Main.GlobalTime / 2) % 1f, 0.5f, 0.35f);
+                        Color c = Main.hslToRgb((float)(Main.GlobalTimeWrappedHourly / 2) % 1f, 0.5f, 0.35f);
                         string potion = "[i:" + ItemID.RedPotion + "]";
-                        tooltips.Add(new TooltipLine(mod, "IDG Debug Item", Idglib.IconText(ItemID.RedPotion) + Idglib.ColorText(c, "This is a Debug Item") + Idglib.IconText(ItemID.RedPotion)));
+                        tooltips.Add(new TooltipLine(Mod, "IDG Debug Item", Idglib.IconText(ItemID.RedPotion) + Idglib.ColorText(c, "This is a Debug Item") + Idglib.IconText(ItemID.RedPotion)));
 
                     } }
                 if (Idglib.AbsentItemDisc.ContainsKey(item.type)) { Color c = Main.hslToRgb(0.6f, 0f, 0.5f);
                     string text;
                     bool check = Idglib.AbsentItemDisc.TryGetValue(item.type, out text);
                     if (check && !Main.LocalPlayer.HasItem(item.type))
-                        tooltips.Add(new TooltipLine(mod, "Absent Item Disc", Idglib.ColorText(c, text)));
+                        tooltips.Add(new TooltipLine(Mod, "Absent Item Disc", Idglib.ColorText(c, text)));
                 }
 
             }
@@ -1372,11 +1376,11 @@ namespace Idglibrary
                 packet.Write(Main.projectile[projectileid].friendly);
                 packet.Write(Main.projectile[projectileid].hostile);
                 packet.Write(Main.projectile[projectileid].usesLocalNPCImmunity);
-                packet.Write(Main.projectile[projectileid].magic);
-                packet.Write(Main.projectile[projectileid].thrown);
-                packet.Write(Main.projectile[projectileid].minion);
-                packet.Write(Main.projectile[projectileid].melee);
-                packet.Write(Main.projectile[projectileid].ranged);
+                packet.Write(Main.projectile[projectileid].CountsAsClass(DamageClass.Magic));
+                packet.Write(Main.projectile[projectileid].CountsAsClass(DamageClass.Throwing));
+                packet.Write(Main.projectile[projectileid].minion); //CountsAsClass(DamageClass.Summon) ?
+                packet.Write(Main.projectile[projectileid].CountsAsClass(DamageClass.Melee));
+                packet.Write(Main.projectile[projectileid].CountsAsClass(DamageClass.Ranged));
                 packet.Write(Main.projectile[projectileid].penetrate);
                 packet.Write((short)Main.projectile[projectileid].localNPCHitCooldown);
                 packet.Write((int)Main.projectile[projectileid].scale * 100);
@@ -1855,54 +1859,56 @@ namespace Idglibrary
                 return _;
             }
 
-            /// <summary>
-            ///   Fills the supplied buffer with pseudorandom bytes.
-            /// </summary>
-            /// <param name="buffer">
-            ///   The buffer to fill.
-            /// </param>
-            public unsafe void NextBytes(byte[] buffer)
+        /// <summary>
+        ///   Fills the supplied buffer with pseudorandom bytes.
+        /// </summary>
+        /// <param name="buffer">
+        ///   The buffer to fill.
+        /// </param>
+
+        //Commented out just so I could build the mod. I have <AllowUnsafeBlocks>true</AllowUnsafeBlocks> but it won't build in game
+        /*public unsafe void NextBytes(byte[] buffer)
+        {
+            // Localize state for stack execution
+            ulong x = x_, y = y_, temp_x, temp_y, z;
+
+            fixed (byte* pBuffer = buffer)
             {
-                // Localize state for stack execution
-                ulong x = x_, y = y_, temp_x, temp_y, z;
+                ulong* pIndex = (ulong*)pBuffer;
+                ulong* pEnd = (ulong*)(pBuffer + buffer.Length);
 
-                fixed (byte* pBuffer = buffer)
+                // Fill array in 8-byte chunks
+                while (pIndex <= pEnd - 1)
                 {
-                    ulong* pIndex = (ulong*)pBuffer;
-                    ulong* pEnd = (ulong*)(pBuffer + buffer.Length);
+                    temp_x = y;
+                    x ^= x << 23; temp_y = x ^ y ^ (x >> 17) ^ (y >> 26);
 
-                    // Fill array in 8-byte chunks
-                    while (pIndex <= pEnd - 1)
-                    {
-                        temp_x = y;
-                        x ^= x << 23; temp_y = x ^ y ^ (x >> 17) ^ (y >> 26);
+                    *(pIndex++) = temp_y + y;
 
-                        *(pIndex++) = temp_y + y;
-
-                        x = temp_x;
-                        y = temp_y;
-                    }
-
-                    // Fill remaining bytes individually to prevent overflow
-                    if (pIndex < pEnd)
-                    {
-                        temp_x = y;
-                        x ^= x << 23; temp_y = x ^ y ^ (x >> 17) ^ (y >> 26);
-                        z = temp_y + y;
-
-                        byte* pByte = (byte*)pIndex;
-                        while (pByte < pEnd) *(pByte++) = (byte)(z >>= 8);
-                    }
+                    x = temp_x;
+                    y = temp_y;
                 }
 
-                // Store modified state in fields.
-                x_ = x;
-                y_ = y;
+                // Fill remaining bytes individually to prevent overflow
+                if (pIndex < pEnd)
+                {
+                    temp_x = y;
+                    x ^= x << 23; temp_y = x ^ y ^ (x >> 17) ^ (y >> 26);
+                    z = temp_y + y;
+
+                    byte* pByte = (byte*)pIndex;
+                    while (pByte < pEnd) *(pByte++) = (byte)(z >>= 8);
+                }
             }
 
-            #endregion
+            // Store modified state in fields.
+            x_ = x;
+            y_ = y;
+        }*/
 
-        }
+        #endregion
+
+    }
 
     //Vector2 but without the constant need to cast the floats, LOL
     //Also me, failing to realize Point exists
@@ -2029,18 +2035,18 @@ namespace Idglibrary
                     {
                         Tile tstart = Framing.GetTileSafely(placementspot.X, placementspot.Y);
                         if (wall > -1 && y2 > -size + 1 && y2 < size - 1 && x2 < size - 1 && x2 > -size + 1)
-                            tstart.wall = (ushort)wall;
-                        if (type > -1000 && (!tstart.active() || replacetile))
+                            tstart.WallType = (ushort)wall;
+                        if (type > -1000 && (!tstart.HasTile || replacetile))
                         {
                             if (type > -1)
                             {
-                                tstart.type = (ushort)type;
-                                tstart.active(true);
-                                tstart.liquid = 0;
+                                tstart.TileType = (ushort)type;
+                                _ = tstart.HasTile;
+                                tstart.LiquidType = 0;
                             }
                             else
                             {
-                                tstart.active(false);
+                                _ = tstart.HasTile;
                             }
                         }
                     }
@@ -2107,17 +2113,17 @@ namespace Idglibrary
                             {
                                 if (!addTile)
                                 {
-                                    Main.tile[k, l].active(false);
-                                    Main.tile[k, l].liquid = 0;
+                                    _ = Main.tile[k, l].HasTile;
+                                    Main.tile[k, l].Get<LiquidData>().LiquidType = 0;
                                 }
                                 else
                                 {
-                                    Main.tile[k, l].liquid = 255;
+                                    Main.tile[k, l].Get<LiquidData>().LiquidType = 255;
                                     if (type == -2)
                                     {
-                                        Main.tile[k, l].lava(true);
+                                        Main.tile[k, l].Get<LiquidData>().LiquidType = 0;
                                     }
-                                    Main.tile[k, l].active(false);
+                                    _ = Main.tile[k, l].HasTile;
                                 }
                             }
                             else
@@ -2130,15 +2136,15 @@ namespace Idglibrary
                                 {
                                     WorldGen.PlaceWall(k, l, 178, true);
                                 }
-                                if (overRide || !Main.tile[k, l].active())
+                                if (overRide || !Main.tile[k, l].HasTile)
                                 {
                                     Tile tile = Main.tile[k, l];
-                                    bool flag3 = Main.tileStone[type] && tile.type != 1;
-                                    if (!TileID.Sets.CanBeClearedDuringGeneration[(int)tile.type])
+                                    bool flag3 = Main.tileStone[type] && tile.TileType != 1;
+                                    if (!TileID.Sets.CanBeClearedDuringGeneration[(int)tile.TileType])
                                     {
                                         flag3 = true;
                                     }
-                                    ushort type2 = tile.type;
+                                    ushort type2 = tile.TileType;
                                     if (type2 <= 147)
                                     {
                                         if (type2 <= 45)
@@ -2192,7 +2198,7 @@ namespace Idglibrary
                                 IL_59B:
                                     if (!flag3)
                                     {
-                                        tile.type = (ushort)type;
+                                        tile.TileType = (ushort)type;
                                         goto IL_5B0;
                                     }
                                     goto IL_5B0;
@@ -2203,18 +2209,18 @@ namespace Idglibrary
                             IL_5B0:
                                 if (addTile)
                                 {
-                                    Main.tile[k, l].active(true);
-                                    Main.tile[k, l].liquid = 0;
-                                    Main.tile[k, l].lava(false);
+                                    _ = Main.tile[k, l].HasTile;
+                                    Main.tile[k, l].Get<LiquidData>().LiquidType = 0;
+                                    //Main.tile[k, l].lava(false);
                                 }
                                 if (noYChange && (double)l < Main.worldSurface && type != 59)
                                 {
-                                    Main.tile[k, l].wall = 2;
+                                    Main.tile[k, l].WallType = 2;
                                 }
-                                if (type == 59 && l > WorldGen.waterLine && Main.tile[k, l].liquid > 0)
+                                if (type == 59 && l > WorldGen.waterLine && Main.tile[k, l].LiquidType > 0)
                                 {
-                                    Main.tile[k, l].lava(false);
-                                    Main.tile[k, l].liquid = 0;
+                                    //Main.tile[k, l].lava(false);
+                                    Main.tile[k, l].Get<LiquidData>().LiquidType = 0;
                                 }
                             }
                         }

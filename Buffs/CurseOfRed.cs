@@ -6,21 +6,17 @@ namespace Idglibrary.Buffs
 {
 	public class CurseOfRed : ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Curse of Red");
 			Description.SetDefault("Your about to drink a Red Potion! Toss it out! Now!!");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = true;
-			longerExpertDebuff = false;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
-		public override bool Autoload(ref string name, ref string texture)
-		{
-			texture = "Terraria/Item_"+ItemID.RedPotion;
-			return true;
-		}
+		public override string Texture => "Terraria/Images/Item_" +ItemID.RedPotion;
 
 		public override void Update(Player player, ref int buffIndex)
 		{
@@ -28,19 +24,19 @@ namespace Idglibrary.Buffs
 			if (player.buffTime[buffIndex] > 180)
 			{
 				if (player.CountItem(ItemID.RedPotion) < 1)
-					player.QuickSpawnItem(ItemID.RedPotion);
+					player.QuickSpawnItem(player.GetItemSource_OpenItem(Type), ItemID.RedPotion);
 			}
 			if (player.buffTime[buffIndex] == 2)
 			{
 			if (player.CountItem(ItemID.RedPotion) > 0)
 				{
-					player.AddBuff(mod.BuffType("NoImmunities"), 180);					
+					player.AddBuff(Mod.Find<ModBuff>("NoImmunities").Type, 180);					
 					int Itemthis = player.FindItem(ItemID.RedPotion);
 					Item thisitem = player.inventory[Itemthis];
 					player.selectedItem = Itemthis;
 					player.controlUseItem = true;
 					ItemLoader.UseItem(thisitem, player);
-					player.AddBuff(mod.BuffType("CurseOfRed"), 60);
+					player.AddBuff(Mod.Find<ModBuff>("CurseOfRed").Type, 60);
 				}
 
 

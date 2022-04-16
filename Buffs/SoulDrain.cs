@@ -1,24 +1,25 @@
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.Audio;
 
 namespace Idglibrary.Buffs
 {
 	public class SoulDrain: ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Soul Drain I");
 			Description.SetDefault("Your very magic is being stripped from you");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			idgplayer.souldrainlevel += 1;
 		}
 
@@ -30,25 +31,21 @@ namespace Idglibrary.Buffs
 
 	public class NoImmunities : ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Anti-Immunity");
 			Description.SetDefault("Your debuff immunities are nullified!");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
-		public override bool Autoload(ref string name, ref string texture)
-		{
-			texture = "Idglibrary/Buffs/SoulDrain";
-			return true;
-		}
+		public override string Texture => "Idglibrary/Buffs/SoulDrain";
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			idgplayer.noimmunity = 10;
 		}
 
@@ -60,7 +57,7 @@ namespace Idglibrary.Buffs
 
 	public class RadCure : ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Radiation Cure");
 			Description.SetDefault("A cure for Radiation? That's RADical!");
@@ -71,7 +68,7 @@ namespace Idglibrary.Buffs
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			idgplayer.radationRecover += IdgNPC.bossAlive ? 0.02f : 0.2f;
 			idgplayer.radresist += 0.50f;
 		}
@@ -80,29 +77,25 @@ namespace Idglibrary.Buffs
 
 	public class Damnation : ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Damnation");
 			Description.SetDefault("Your health regen is sundered and healing items heal for far less");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
-		public override bool Autoload(ref string name, ref string texture)
-		{
-			texture = "Idglibrary/Buffs/SoulDrain";
-			return true;
-		}
+		public override string Texture => "Idglibrary/Buffs/SoulDrain";
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			if (idgplayer.Damnation < 1)
 			{
 				idgplayer.Damnation = 15;
-				Main.PlaySound(SoundID.Item, (int)player.position.X, (int)player.position.Y, 84, 0.5f, -0.5f);
+				SoundEngine.PlaySound(SoundID.Item, (int)player.position.X, (int)player.position.Y, 84, 0.5f, -0.5f);
 
 			}
 			if (idgplayer.Damnation < 10)
@@ -112,19 +105,19 @@ namespace Idglibrary.Buffs
 
 	public class HotBarCurse : ModBuff
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Hotbar Curse");
 			Description.SetDefault("A hotbar slot is locked!");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
 		public override bool ReApply(Player player, int time, int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			int slot = -1;
 			for (int i = 0; i < 10; i += 1)
 			{
@@ -138,15 +131,11 @@ namespace Idglibrary.Buffs
 			return true;
 		}
 
-		public override bool Autoload(ref string name, ref string texture)
-		{
-			texture = "Idglibrary/Buffs/SoulDrain";
-			return true;
-		}
+		public override string Texture => "Idglibrary/Buffs/SoulDrain";
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			if (idgplayer.hotbarcurse < 0)
 				ReApply(player, player.buffTime[buffIndex],buffIndex);
 		}
@@ -154,19 +143,19 @@ namespace Idglibrary.Buffs
 
 	public class ItemCurse : HotBarCurse
 	{
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("Item Curse");
 			Description.SetDefault("A type of item is locked!");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
 		public override bool ReApply(Player player, int time, int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			if (!player.HeldItem.IsAir)
 			{
 				idgplayer.itemcurse = player.HeldItem.type;
@@ -176,7 +165,7 @@ namespace Idglibrary.Buffs
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			if (idgplayer.itemcurse < 0)
 				ReApply(player, player.buffTime[buffIndex], buffIndex);
 		}
@@ -185,21 +174,17 @@ namespace Idglibrary.Buffs
 	public class NullExceptionDebuff: ModBuff
 	{
 		public static int clientthing = 0;
-		public override void SetDefaults()
+		public override void SetStaticDefaults()
 		{
 			DisplayName.SetDefault("N0ll U");
 			Description.SetDefault("");
 			Main.debuff[Type] = true;
 			Main.pvpBuff[Type] = true;
 			Main.buffNoSave[Type] = false;
-			longerExpertDebuff = true;
+			BuffID.Sets.LongerExpertDebuff[Type] = true;
 		}
 
-		public override bool Autoload(ref string name, ref string texture)
-		{
-			texture = "Idglibrary/Buffs/SoulDrain";
-			return true;
-		}
+		public override string Texture => "Idglibrary/Buffs/SoulDrain";
 
 		public override void ModifyBuffTip(ref string tip, ref int rare)
 		{
@@ -244,7 +229,7 @@ namespace Idglibrary.Buffs
 
 		public override void Update(Player player, ref int buffIndex)
 		{
-			IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			idgplayer.NullU += 1+(int)(player.buffTime[buffIndex]/(60f*7f));
 			NullExceptionDebuff.clientthing = idgplayer.NullU;
 		}

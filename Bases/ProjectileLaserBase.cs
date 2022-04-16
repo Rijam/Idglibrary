@@ -13,7 +13,7 @@ namespace Idglibrary.Bases
     public class ProjectileLaserBase : ModProjectile
     {
 
-        public string laserTexture="Terraria/Projectile_" + ProjectileID.RocketII;
+        public string laserTexture="Terraria/Images/Projectile_" + ProjectileID.RocketII;
         public string laserTextureEnd="";
         public string laserTextureBeginning="";
         public float MoveDistance = 0f;
@@ -21,17 +21,17 @@ namespace Idglibrary.Bases
         public float CollisionDistance = 0f;
         public float Distance
         {
-            get { return projectile.ai[0]; }
-            set { projectile.ai[0] = value; }
+            get { return Projectile.ai[0]; }
+            set { Projectile.ai[0] = value; }
         }
         public Vector2 hitspot
         {
-            get { return projectile.Center+(projectile.velocity * Distance); }
+            get { return Projectile.Center+(Projectile.velocity * Distance); }
         }
 
         public override string Texture
         {
-            get { return "Terraria/Projectile_" + ProjectileID.RocketII; }
+            get { return "Terraria/Images/Projectile_" + ProjectileID.RocketII; }
         }
 
         public override void SetStaticDefaults()
@@ -41,17 +41,17 @@ namespace Idglibrary.Bases
 
         public override void SetDefaults()
         {
-            projectile.width = 32;
-            projectile.height = 32;
-            projectile.friendly = true;
-            projectile.hostile = false;
-            projectile.tileCollide = false;
-            projectile.ignoreWater = true;
-            projectile.penetrate = -1;
-            projectile.scale = 1f;
-            projectile.timeLeft = 90;
-            projectile.tileCollide = true;
-            aiType = ProjectileID.WoodenArrowFriendly;
+            Projectile.width = 32;
+            Projectile.height = 32;
+            Projectile.friendly = true;
+            Projectile.hostile = false;
+            Projectile.tileCollide = false;
+            Projectile.ignoreWater = true;
+            Projectile.penetrate = -1;
+            Projectile.scale = 1f;
+            Projectile.timeLeft = 90;
+            Projectile.tileCollide = true;
+            AIType = ProjectileID.WoodenArrowFriendly;
         }
 
         public virtual void MoreAI(Vector2 dustspot)
@@ -61,8 +61,8 @@ namespace Idglibrary.Bases
 
         public float movementFactor
         {
-            get { return projectile.ai[0]; }
-            set { projectile.ai[0] = value; }
+            get { return Projectile.ai[0]; }
+            set { Projectile.ai[0] = value; }
         }
 
         // It appears that for this AI, only the ai0 field is used!
@@ -70,14 +70,14 @@ namespace Idglibrary.Bases
         {
             
 
-            Vector2 start=projectile.Center;
-            if (projectile.tileCollide)
+            Vector2 start=Projectile.Center;
+            if (Projectile.tileCollide)
             {
                 for (Distance = MoveDistance; Distance <= MaxDistance; Distance += 5f)
                 {
-                    start = projectile.Center + projectile.velocity * Distance;
+                    start = Projectile.Center + Projectile.velocity * Distance;
                     {
-                        if ((!Collision.CanHit(projectile.Center, 1, 1, start, 1, 1)) && Distance > CollisionDistance)
+                        if ((!Collision.CanHit(Projectile.Center, 1, 1, start, 1, 1)) && Distance > CollisionDistance)
                         {
                             Distance -= 5f;
                             break;
@@ -90,16 +90,16 @@ namespace Idglibrary.Bases
                 Distance= MaxDistance;
             }
 
-            projectile.position-=projectile.velocity;
+            Projectile.position-=Projectile.velocity;
 
             MoreAI(hitspot);
 
 
         }
 
-        public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
+        public override bool PreDraw(ref Color lightColor)
         {
-        Idglib.DrawTether(laserTexture,hitspot,projectile.Center,projectile.Opacity);
+        Idglib.DrawTether(laserTexture,hitspot,Projectile.Center,Projectile.Opacity);
         return true;
         }
 
@@ -107,12 +107,12 @@ namespace Idglibrary.Bases
         {
             //if (AtMaxCharge)
             //{
-                Player player = Main.player[projectile.owner];
-                Vector2 unit = projectile.velocity;
+                Player player = Main.player[Projectile.owner];
+                Vector2 unit = Projectile.velocity;
                 float point = 0f;
                 // Run an AABB versus Line check to look for collisions, look up AABB collision first to see how it works
                 // It will look for collisions on the given line using AABB
-                return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), projectile.Center,
+                return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), Projectile.Center,
                     hitspot, 22, ref point);
             //}
             //return false;

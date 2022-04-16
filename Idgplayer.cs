@@ -36,7 +36,7 @@ namespace Idglibrary
 		{
 		Idglib themod=(Idglib.Instance);
 		string[] buffs={"RadiationOne","RadiationTwo","RadiationThree"};
-		player.AddBuff(themod.BuffType(buffs[(int)MathHelper.Clamp(level,0,2)]),time,quiet);
+		player.AddBuff(themod.Find<ModBuff>(buffs[(int)MathHelper.Clamp(level,0,2)]).Type,time,quiet);
 		}
 
 		public override void ResetEffects()
@@ -52,14 +52,14 @@ namespace Idglibrary
 			Damnation = Math.Max(Damnation - 1, 0);
 		}
 
-		public override TagCompound Save()
-        {
+		public override void SaveData(TagCompound tag)
+		{
             TagCompound IDGSave = new TagCompound();
             IDGSave["idgradation"]=radationAmmount;
-            return IDGSave;
+            //return IDGSave;
         }
 
-        public override void Load(TagCompound IDGSave)
+        public override void LoadData(TagCompound IDGSave)
         {
         	radationAmmount=IDGSave.GetFloat("idgradation");
         }
@@ -77,16 +77,16 @@ namespace Idglibrary
 
 		public override void PreUpdateBuffs()
 		{
-			if (!player.HasBuff(mod.BuffType("HotBarCurse")))
+			if (!Player.HasBuff(Mod.Find<ModBuff>("HotBarCurse").Type))
 				hotbarcurse = -1;
-			if (!player.HasBuff(mod.BuffType("ItemCurse")))
+			if (!Player.HasBuff(Mod.Find<ModBuff>("ItemCurse").Type))
 				itemcurse = -1;
 			if (noimmunity > 0)
 			{
-				for (int loc = 0; loc < player.buffImmune.Length; loc += 1)
+				for (int loc = 0; loc < Player.buffImmune.Length; loc += 1)
 				{
 					if (Main.debuff[loc])
-					player.buffImmune[loc] = false;
+					Player.buffImmune[loc] = false;
 				}
 			}
 				noimmunity = Math.Max(noimmunity - 1, 0);
@@ -107,10 +107,10 @@ namespace Idglibrary
 			if (radationlevel > 0)
 			{
 				radationAmmount += ((0.01f * ((float)radationlevel))* (1f+(Idglib.GetSGAmodNightmareMode()*2f)) / (limbo && !resistLimbo ? 1f : radresist));
-				if (player.statLife < 2) 
+				if (Player.statLife < 2) 
 				{
 					float rad = radationAmmount;
-					player.KillMe(PlayerDeathReason.ByCustomReason(player.name + (limbo ? " faded away" : "'s flesh dissolved away")), 111111, 0, false);
+					Player.KillMe(PlayerDeathReason.ByCustomReason(Player.name + (limbo ? " faded away" : "'s flesh dissolved away")), 111111, 0, false);
 					radationAmmount = rad*0.75f;
 				}
 
@@ -127,12 +127,12 @@ namespace Idglibrary
 			}
 			else { souldrainAmmount = Math.Max(souldrainAmmount - 0.1f, 0f); }
 
-			player.statManaMax2 = (int)MathHelper.Clamp(player.statManaMax2 - ((int)souldrainAmmount), 0, 10000);
-			player.statLifeMax2 -= (int)radationAmmount;
+			Player.statManaMax2 = (int)MathHelper.Clamp(Player.statManaMax2 - ((int)souldrainAmmount), 0, 10000);
+			Player.statLifeMax2 -= (int)radationAmmount;
 
 			if (Idglib.GetSGAmodNightmareMode()>0)
 			{
-				player.statLifeMax2 *= 2 + Idglib.GetSGAmodNightmareMode();
+				Player.statLifeMax2 *= 2 + Idglib.GetSGAmodNightmareMode();
 			}
 
 
@@ -163,14 +163,14 @@ namespace Idglibrary
 
 		public override void UpdateBadLifeRegen()
 		{
-			if (Damnation > 0 && player.lifeRegen>0)
+			if (Damnation > 0 && Player.lifeRegen>0)
 			{
-				player.lifeRegen/=5;
+				Player.lifeRegen/=5;
 			}
 			if (Idglib.GetSGAmodNightmareMode()>0)
 			{
-				if (player.lifeRegen < 0)
-				player.lifeRegen *= 2+Idglib.GetSGAmodNightmareMode();
+				if (Player.lifeRegen < 0)
+				Player.lifeRegen *= 2+Idglib.GetSGAmodNightmareMode();
 			}
 		}
 
@@ -214,57 +214,57 @@ namespace Idglibrary
 			if (level > 3)
 			{
 				if (!runit2)
-				player.ResetEffects();
-				player.head = -1;
-				player.body = -1;
-				player.legs = -1;
-				player.handon = -1;
-				player.handoff = -1;
-				player.back = -1;
-				player.front = -1;
-				player.shoe = -1;
-				player.waist = -1;
-				player.shield = -1;
-				player.neck = -1;
-				player.face = -1;
-				player.balloon = -1;
+				Player.ResetEffects();
+				Player.head = -1;
+				Player.body = -1;
+				Player.legs = -1;
+				Player.handon = -1;
+				Player.handoff = -1;
+				Player.back = -1;
+				Player.front = -1;
+				Player.shoe = -1;
+				Player.waist = -1;
+				Player.shield = -1;
+				Player.neck = -1;
+				Player.face = -1;
+				Player.balloon = -1;
 				return;
 			}
 
 			if (level > 2)
 			{
-				int wingtype = player.wings;
-				sbyte backtype = player.back;
-				int wingtime = player.wingTimeMax;
+				int wingtype = Player.wings;
+				sbyte backtype = Player.back;
+				int wingtime = Player.wingTimeMax;
 				if (!runit2)
-				player.ResetEffects();
-				player.head = -1;
-				player.body = -1;
-				player.legs = -1;
-				player.handon = -1;
-				player.handoff = -1;
-				player.back = -1;
-				player.front = -1;
-				player.shoe = -1;
-				player.waist = -1;
-				player.shield = -1;
-				player.neck = -1;
-				player.face = -1;
-				player.balloon = -1;
+				Player.ResetEffects();
+				Player.head = -1;
+				Player.body = -1;
+				Player.legs = -1;
+				Player.handon = -1;
+				Player.handoff = -1;
+				Player.back = -1;
+				Player.front = -1;
+				Player.shoe = -1;
+				Player.waist = -1;
+				Player.shield = -1;
+				Player.neck = -1;
+				Player.face = -1;
+				Player.balloon = -1;
 
 				if (runit)
 				{
 
-					for (int x = 3; x < 8 + player.extraAccessorySlots; x++)
+					for (int x = 3; x < 8 + Player.extraAccessorySlots; x++)
 					{
-						if ((int)player.armor[x].wingSlot > 0)
+						if ((int)Player.armor[x].wingSlot > 0)
 						{
-							/*if (player.armor[x].modItem == null)
+							/*if (player.armor[x].ModItem == null)
 								player.VanillaUpdateEquip(player.armor[x]);
 							else
-								player.armor[x].modItem.UpdateAccessory(player, true);*/
+								player.armor[x].ModItem.UpdateAccessory(player, true);*/
 
-							player.wingsLogic = (int)player.armor[x].wingSlot;
+							Player.wingsLogic = (int)Player.armor[x].wingSlot;
 
 							break;
 						}
@@ -272,45 +272,45 @@ namespace Idglibrary
 
 				}
 
-				player.wings = wingtype;
-				player.back = backtype;
-				player.wingTimeMax = wingtime;
+				Player.wings = wingtype;
+				Player.back = backtype;
+				Player.wingTimeMax = wingtime;
 
 				return;
 			}
 
 			if (level > 0)
 			{
-				int wingtype = player.wings;
-				sbyte backtype = player.back;
-				int wingtime = player.wingTimeMax;
+				int wingtype = Player.wings;
+				sbyte backtype = Player.back;
+				int wingtime = Player.wingTimeMax;
 
 				if (!runit2)
-					player.ResetEffects();
+					Player.ResetEffects();
 
 				if (runit)
 				{
 					for (int x = 0; x < 3; x++)
 					{
-						if (player.armor[x].modItem == null)
-							player.VanillaUpdateEquip(player.armor[x]);
+						if (Player.armor[x].ModItem == null)
+							Player.VanillaUpdateEquip(Player.armor[x]);
 						else
-							player.armor[x].modItem.UpdateEquip(player);
+							Player.armor[x].ModItem.UpdateEquip(Player);
 
-						ItemLoader.UpdateEquip(player.armor[x], player);
+						ItemLoader.UpdateEquip(Player.armor[x], Player);
 					}
-					ItemLoader.UpdateArmorSet(player, player.armor[0], player.armor[1], player.armor[2]);
+					ItemLoader.UpdateArmorSet(Player, Player.armor[0], Player.armor[1], Player.armor[2]);
 
-					for (int x = 3; x < 8 + player.extraAccessorySlots; x++)
+					for (int x = 3; x < 8 + Player.extraAccessorySlots; x++)
 					{
-						if ((int)player.armor[x].wingSlot > 0)
+						if ((int)Player.armor[x].wingSlot > 0)
 						{
-							/*if (player.armor[x].modItem == null)
+							/*if (player.armor[x].ModItem == null)
 								player.VanillaUpdateEquip(player.armor[x]);
 							else
-								player.armor[x].modItem.UpdateAccessory(player,true);*/
+								player.armor[x].ModItem.UpdateAccessory(player,true);*/
 
-							player.wingsLogic = (int)player.armor[x].wingSlot;
+							Player.wingsLogic = (int)Player.armor[x].wingSlot;
 
 
 
@@ -320,20 +320,20 @@ namespace Idglibrary
 
 				}
 
-				player.handon = -1;
-				player.handoff = -1;
-				player.back = -1;
-				player.front = -1;
-				player.shoe = -1;
-				player.waist = -1;
-				player.shield = -1;
-				player.neck = -1;
-				player.face = -1;
-				player.balloon = -1;
+				Player.handon = -1;
+				Player.handoff = -1;
+				Player.back = -1;
+				Player.front = -1;
+				Player.shoe = -1;
+				Player.waist = -1;
+				Player.shield = -1;
+				Player.neck = -1;
+				Player.face = -1;
+				Player.balloon = -1;
 
-				player.wings = wingtype;
-				player.back = backtype;
-				player.wingTimeMax = wingtime;
+				Player.wings = wingtype;
+				Player.back = backtype;
+				Player.wingTimeMax = wingtime;
 
 				return;
 			}
@@ -342,7 +342,7 @@ namespace Idglibrary
 
 
 
-		public override void DrawEffects(PlayerDrawInfo drawInfo, ref float r, ref float g, ref float b, ref float a, ref bool fullBright)
+		public override void DrawEffects(PlayerDrawSet drawInfo, ref float r, ref float g, ref float b, ref float a, ref bool fullBright)
 		{
 			int ammount2 = limbo ? 5 : 1;
 			int ammount=(radationlevel*4+1)+(radationAmmount>0f ? 2 : 0)* ammount2;
@@ -356,12 +356,12 @@ namespace Idglibrary
 						if (limbo)
 						size = 0.15f + (float)Math.Pow((double)radationAmmount / 160.00, 0.5);
 						Vector2 randomcircle=new Vector2(Main.rand.Next(-8000,8000),Main.rand.Next(-8000,8000)); randomcircle.Normalize();
-					int dust = Dust.NewDust(new Vector2(drawInfo.position.X,drawInfo.position.Y)+randomcircle*8f, player.width + 4, player.height + 4, DustID.AncientLight, player.velocity.X * 0.4f, player.velocity.Y * 0.4f, 30, default(Color), size);
+					int dust = Dust.NewDust(new Vector2(drawInfo.Position.X,drawInfo.Position.Y)+randomcircle*8f, Player.width + 4, Player.height + 4, DustID.AncientLight, Player.velocity.X * 0.4f, Player.velocity.Y * 0.4f, 30, default(Color), size);
 					Main.dust[dust].noGravity = true;
-					Main.dust[dust].color=Main.hslToRgb((float)(Main.GlobalTime*2)%1f, 0.5f, 0.35f);
+					Main.dust[dust].color=Main.hslToRgb((float)(Main.GlobalTimeWrappedHourly * 2)%1f, 0.5f, 0.35f);
 						if (limbo)
 						Main.dust[dust].shader = GameShaders.Armor.GetShaderFromItemId(ItemID.ShadowDye);
-							Main.playerDrawDust.Add(dust);
+							drawInfo.DustCache.Add(dust); //maybe?
 				}}
 				//r *= 0.1f;
 				//g *= 0.2f;

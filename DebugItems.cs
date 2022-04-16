@@ -20,8 +20,10 @@ using System.Runtime.Serialization;
 using Terraria.ModLoader.Config;
 using Terraria.ModLoader.Config.UI;
 using Terraria.UI;
-using Terraria.World.Generation;
+using Terraria.WorldBuilding;
 using static Terraria.ModLoader.ModContent;
+using Terraria.Audio;
+using Terraria.GameContent;
 
 namespace Idglibrary
 {
@@ -45,17 +47,17 @@ namespace Idglibrary
     public class IdgDebugItem: ModItem
     {
 
-        public override bool Autoload(ref string name)
+        public override bool IsLoadingEnabled(Mod mod)
         {
             if (!GetInstance<IDGSettings>().Items || this.GetType()==typeof(IdgDebugItem))
                 return false;
 
-            return base.Autoload(ref name);
+            return base.IsLoadingEnabled(mod);
         }
 
         public override string Texture
         {
-            get { return "Terraria/Item_" + 0; }
+            get { return "Terraria/Images/Item_" + 0; }
         }
 
                 public override void SetStaticDefaults()
@@ -79,21 +81,21 @@ namespace Idglibrary
             Tooltip.SetDefault("Instantly records and stores the current playing song, even if they don't have a music box\nFunctions while favorited in your inventory\nDoesn't record vanilla tracks\nAdding new mods may cause the music box to reset");
         }
 
-        public override bool CloneNewInstances => true;
+        //public override bool CloneNewInstances => true; commenting this out will probably break everything
 
-        public override TagCompound Save()
+        public override void SaveData(TagCompound tag)
         {
-            TagCompound tag = new TagCompound();
+            //TagCompound tag = new TagCompound();
             tag["myMusic"] = myMusic;
             tag["musicString"] = musicString;
-            tag["knownID"] = item.type;
-            return tag;
+            tag["knownID"] = Item.type;
+            //return tag;
         }
 
-        public override void Load(TagCompound tag)
+        public override void LoadData(TagCompound tag)
         {
             knownID = tag.GetInt("knownID");
-            if (knownID == item.type)
+            if (knownID == Item.type)
             {
                 myMusic = tag.GetInt("myMusic");
                 musicString = tag.GetString("musicString");
@@ -103,29 +105,29 @@ namespace Idglibrary
 
         public override void SetDefaults()
         {
-            item.width = 14;
-            item.height = 14;
-            item.maxStack = 1;
-            item.rare = 8;
-            item.value = Item.buyPrice(platinum: 3);
-            item.useStyle = 2;
-            item.useAnimation = 17;
-            item.useTime = 17;
-            item.useTurn = true;
-            item.UseSound = SoundID.Item9;
+            Item.width = 14;
+            Item.height = 14;
+            Item.maxStack = 1;
+            Item.rare = 8;
+            Item.value = Item.buyPrice(platinum: 3);
+            Item.useStyle = 2;
+            Item.useAnimation = 17;
+            Item.useTime = 17;
+            Item.useTurn = true;
+            Item.UseSound = SoundID.Item9;
         }
         public override Color? GetAlpha(Color lightColor)
         {
             if (musicString != null && musicString != "")
                 return Main.hslToRgb(((float)myMusic / MathHelper.Pi) % 1f, 0.8f, 0.75f);
 
-            return Main.hslToRgb((Main.GlobalTime * 0.316f) % 1f, 0.65f, 0.75f);
+            return Main.hslToRgb((Main.GlobalTimeWrappedHourly * 0.316f) % 1f, 0.65f, 0.75f);
         }
 
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
             if (musicString != null && musicString != "")
-                tooltips.Add(new TooltipLine(mod, "SGAmodMagicMusicBox", Idglib.ColorText(Main.hslToRgb((-Main.GlobalTime / 3f) % 1f, 0.8f, 0.8f), musicString)));
+                tooltips.Add(new TooltipLine(Mod, "SGAmodMagicMusicBox", Idglib.ColorText(Main.hslToRgb((-Main.GlobalTimeWrappedHourly / 3f) % 1f, 0.8f, 0.8f), musicString)));
         }
 
         public override bool CanUseItem(Player player)
@@ -133,7 +135,7 @@ namespace Idglibrary
             return Main.curMusic > 41;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
 
             FieldInfo sounds = typeof(SoundLoader).GetField("sounds", BindingFlags.Static | BindingFlags.NonPublic);
@@ -147,7 +149,7 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.MusicBox; }
+            get { return "Terraria/Images/Item_" + ItemID.MusicBox; }
         }
 
     }
@@ -161,7 +163,7 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override Color? GetAlpha(Color lightColor)
         {
@@ -169,12 +171,12 @@ namespace Idglibrary
         }
         public override void SetDefaults()
         {
-            item.maxStack = 1;
-            item.width = 32;
-            item.height = 32;
-            item.value = 0;
-            item.rare = ItemRarityID.Expert;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 1;
+            Item.width = 32;
+            Item.height = 32;
+            Item.value = 0;
+            Item.rare = ItemRarityID.Expert;
+            Item.UseSound = SoundID.Item2;
         }
     }
 
@@ -187,28 +189,28 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override void SetDefaults()
         {
-            item.maxStack = 999;
-            item.consumable = true;
-            item.width = 32;
-            item.height = 32;
-            item.useTime = 2;
-            item.useAnimation = 2;
-            item.useStyle = 4;
-            item.noMelee = true; //so the item's animation doesn't do damage
-            item.value = 0;
-            item.rare = 9;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.width = 32;
+            Item.height = 32;
+            Item.useTime = 2;
+            Item.useAnimation = 2;
+            Item.useStyle = 4;
+            Item.noMelee = true; //so the item's animation doesn't do damage
+            Item.value = 0;
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item2;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            Main.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
             IdgPlayer.AddRadiationDebuff(player,600,0);
             return true;
         }
@@ -222,28 +224,28 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override void SetDefaults()
         {
-            item.maxStack = 999;
-            item.consumable = true;
-            item.width = 32;
-            item.height = 32;
-            item.useTime = 2;
-            item.useAnimation = 2;
-            item.useStyle = 4;
-            item.noMelee = true; //so the item's animation doesn't do damage
-            item.value = 0;
-            item.rare = 9;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.width = 32;
+            Item.height = 32;
+            Item.useTime = 2;
+            Item.useAnimation = 2;
+            Item.useStyle = 4;
+            Item.noMelee = true; //so the item's animation doesn't do damage
+            Item.value = 0;
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item2;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            Main.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
             IdgPlayer.AddRadiationDebuff(player,600,1);
 
             return true;
@@ -259,28 +261,28 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override void SetDefaults()
         {
-            item.maxStack = 999;
-            item.consumable = true;
-            item.width = 32;
-            item.height = 32;
-            item.useTime = 2;
-            item.useAnimation = 2;
-            item.useStyle = 4;
-            item.noMelee = true; //so the item's animation doesn't do damage
-            item.value = 0;
-            item.rare = 9;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.width = 32;
+            Item.height = 32;
+            Item.useTime = 2;
+            Item.useAnimation = 2;
+            Item.useStyle = 4;
+            Item.noMelee = true; //so the item's animation doesn't do damage
+            Item.value = 0;
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item2;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            Main.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
             IdgPlayer.AddRadiationDebuff(player,600,2);
 
             return true;
@@ -296,29 +298,29 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override void SetDefaults()
         {
-            item.maxStack = 999;
-            item.consumable = true;
-            item.width = 32;
-            item.height = 32;
-            item.useTime = 2;
-            item.useAnimation = 2;
-            item.useStyle = 4;
-            item.noMelee = true; //so the item's animation doesn't do damage
-            item.value = 0;
-            item.rare = 9;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.width = 32;
+            Item.height = 32;
+            Item.useTime = 2;
+            Item.useAnimation = 2;
+            Item.useStyle = 4;
+            Item.noMelee = true; //so the item's animation doesn't do damage
+            Item.value = 0;
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item2;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            Main.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
-            player.AddBuff(mod.BuffType("BossFightPurity"), 600);
+            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            player.AddBuff(ModContent.BuffType<Buffs.BossFightPurity>(), 600);
 
             return true;
         }
@@ -332,29 +334,29 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override void SetDefaults()
         {
-            item.maxStack = 999;
-            item.consumable = true;
-            item.width = 32;
-            item.height = 32;
-            item.useTime = 2;
-            item.useAnimation = 2;
-            item.useStyle = 4;
-            item.noMelee = true; //so the item's animation doesn't do damage
-            item.value = 0;
-            item.rare = 9;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.width = 32;
+            Item.height = 32;
+            Item.useTime = 2;
+            Item.useAnimation = 2;
+            Item.useStyle = 4;
+            Item.noMelee = true; //so the item's animation doesn't do damage
+            Item.value = 0;
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item2;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            Main.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
-            player.AddBuff(mod.BuffType("CurseOfRed"), 600);
+            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            player.AddBuff(ModContent.BuffType<Buffs.CurseOfRed>(), 600);
 
             return true;
         }
@@ -368,29 +370,29 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override void SetDefaults()
         {
-            item.maxStack = 999;
-            item.consumable = true;
-            item.width = 32;
-            item.height = 32;
-            item.useTime = 2;
-            item.useAnimation = 2;
-            item.useStyle = 4;
-            item.noMelee = true; //so the item's animation doesn't do damage
-            item.value = 0;
-            item.rare = 9;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.width = 32;
+            Item.height = 32;
+            Item.useTime = 2;
+            Item.useAnimation = 2;
+            Item.useStyle = 4;
+            Item.noMelee = true; //so the item's animation doesn't do damage
+            Item.value = 0;
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item2;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod,typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            Main.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
-            player.AddBuff(mod.BuffType("SoulDrain"), 600);
+            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            player.AddBuff(ModContent.BuffType<Buffs.SoulDrain>(), 600);
 
             return true;
         }
@@ -404,29 +406,29 @@ namespace Idglibrary
         }
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.RedPotion; }
+            get { return "Terraria/Images/Item_" + ItemID.RedPotion; }
         }
         public override void SetDefaults()
         {
-            item.maxStack = 999;
-            item.consumable = true;
-            item.width = 32;
-            item.height = 32;
-            item.useTime = 2;
-            item.useAnimation = 2;
-            item.useStyle = 4;
-            item.noMelee = true; //so the item's animation doesn't do damage
-            item.value = 0;
-            item.rare = 9;
-            item.UseSound = SoundID.Item2;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.width = 32;
+            Item.height = 32;
+            Item.useTime = 2;
+            Item.useAnimation = 2;
+            Item.useStyle = 4;
+            Item.noMelee = true; //so the item's animation doesn't do damage
+            Item.value = 0;
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item2;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer(mod, typeof(IdgPlayer).Name) as IdgPlayer;
+            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            Main.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
-            player.AddBuff(mod.BuffType("NullExceptionDebuff"), 300);
+            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            player.AddBuff(ModContent.BuffType<Buffs.NullExceptionDebuff>(), 300);
 
             return true;
         }
@@ -440,23 +442,23 @@ namespace Idglibrary
         }
         public override void SetDefaults()
         {
-            item.damage = 1;
-            item.melee = true;
-            item.width = 40;
-            item.height = 40;
-            item.useTime = 10;
-            item.useAnimation = 10;
-            item.useStyle = 1;
-            item.knockBack = 6;
-            item.value = Item.sellPrice(0, 0, 0, 0);
-            item.rare = 9;
-            item.UseSound = SoundID.Item1;
-            item.autoReuse = true;
+            Item.damage = 1;
+            Item.DamageType = DamageClass.Melee;
+            Item.width = 40;
+            Item.height = 40;
+            Item.useTime = 10;
+            Item.useAnimation = 10;
+            Item.useStyle = 1;
+            Item.knockBack = 6;
+            Item.value = Item.sellPrice(0, 0, 0, 0);
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item1;
+            Item.autoReuse = true;
         }
 
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.TerraBlade; }
+            get { return "Terraria/Images/Item_" + ItemID.TerraBlade; }
         }
 
         public override bool AltFunctionUse(Player player)
@@ -464,7 +466,7 @@ namespace Idglibrary
             return true;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
         for (int x = 0; x < Main.maxNPCs; x++){
         NPC thisnpc=Main.npc[x];
@@ -475,10 +477,10 @@ namespace Idglibrary
 
                         if (player.altFunctionUse == 2)
                         {
-                            if (thisnpc.GetType().GetMethod("NPCLoot") != null)
+                            if (thisnpc.GetType().GetMethod("OnKill") != null)
                             {
-                                if (thisnpc.modNPC != null)
-                                    thisnpc.modNPC.NPCLoot();
+                                if (thisnpc.ModNPC != null)
+                                    thisnpc.ModNPC.OnKill(); //OnKill is probably the wrong hook
                                 else
                                     thisnpc.NPCLoot();
                             }
@@ -512,17 +514,17 @@ namespace Idglibrary
         }
         public override void SetDefaults()
         {
-            item.melee = true;
-            item.width = 40;
-            item.height = 40;
-            item.useTime = 10;
-            item.useAnimation = 10;
-            item.useStyle = 2;
-            item.melee = false;
-            item.value = Item.sellPrice(0, 0, 0, 0);
-            item.rare = 9;
-            item.UseSound = SoundID.Item1;
-            item.autoReuse = false;
+            Item.DamageType = DamageClass.Melee;
+            Item.width = 40;
+            Item.height = 40;
+            Item.useTime = 10;
+            Item.useAnimation = 10;
+            Item.useStyle = 2;
+            // item.melee = false /* tModPorter - this is redundant, for more info see https://github.com/tModLoader/tModLoader/wiki/Update-Migration-Guide#damage-classes */ ;
+            Item.value = Item.sellPrice(0, 0, 0, 0);
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item1;
+            Item.autoReuse = false;
         }
 
                 public override bool AltFunctionUse(Player player)
@@ -532,7 +534,7 @@ namespace Idglibrary
 
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
-            tooltips.Add(new TooltipLine(mod,"IDG Debug Mode info","Use to see "+modesstring[mode]));
+            tooltips.Add(new TooltipLine(Mod,"IDG Debug Mode info","Use to see "+modesstring[mode]));
         }
 
         public override bool CanUseItem(Player player)
@@ -543,7 +545,7 @@ namespace Idglibrary
             if (mode>modesstring.Length-1)
             mode=0;
             altfired=true;
-            Main.PlaySound(21, (int)player.position.X, (int)player.position.Y, 17);
+            SoundEngine.PlaySound(21, (int)player.position.X, (int)player.position.Y, 17);
             Main.NewText("Now Displaying: "+modesstring[mode],200,200,200);
             return false;
             }else{altfired=false;return true;}
@@ -552,16 +554,16 @@ namespace Idglibrary
 
         private Color newcolor(float value){
 
-        return Main.hslToRgb((float)((Main.GlobalTime/15)+value)%1f, 0.75f, 0.35f);
+        return Main.hslToRgb((float)((Main.GlobalTimeWrappedHourly /15)+value)%1f, 0.75f, 0.35f);
 
         }
 
         public override string Texture
         {
-            get { return "Terraria/Item_" + ItemID.LunarTabletFragment; }
+            get { return "Terraria/Images/Item_" + ItemID.LunarTabletFragment; }
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)
         {
             float morecolorwhendifferentmod=0f;
             string lastmod="";
@@ -577,10 +579,10 @@ namespace Idglibrary
             for (int i = 0; i < 58; i++)
             {
                 Item item = player.inventory[i];
-                if (item.modItem!=null){
-                string currentmode=(item.modItem.mod).GetType().Name;
-                if (lastmod!=(item.modItem.mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
-                Main.NewText("[i:"+item.type+"]Class"+Idglib.ColorText(c,item.modItem.GetType().Name)+"Type ID"+Idglib.ColorText(c,(item.type).ToString())+"Mod"+Idglib.ColorText(c,(item.modItem.mod).GetType().Name),200,250,250);
+                if (item.ModItem!=null){
+                string currentmode=(item.ModItem.Mod).GetType().Name;
+                if (lastmod!=(item.ModItem.Mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
+                Main.NewText("[i:"+item.type+"]Class"+Idglib.ColorText(c,item.ModItem.GetType().Name)+"Type ID"+Idglib.ColorText(c,(item.type).ToString())+"Mod"+Idglib.ColorText(c,(item.ModItem.Mod).GetType().Name),200,250,250);
                 lastmod=currentmode;
             }}
             }
@@ -589,10 +591,10 @@ namespace Idglibrary
             for (int i = 0; i < Main.maxNPCs; i++)
             {
                 NPC npc = Main.npc[i];
-                if (npc.modNPC!=null){
-                string currentmode=(npc.modNPC.mod).GetType().Name;
-                if (lastmod!=(npc.modNPC.mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
-                Main.NewText(Idglib.ColorText(c,npc.FullName)+"Class"+Idglib.ColorText(c,npc.modNPC.GetType().Name)+"Mod"+Idglib.ColorText(c,(npc.modNPC.mod).GetType().Name),200,250,250);
+                if (npc.ModNPC != null){
+                string currentmode=(npc.ModNPC.Mod).GetType().Name;
+                if (lastmod!=(npc.ModNPC.Mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
+                Main.NewText(Idglib.ColorText(c,npc.FullName)+"Class"+Idglib.ColorText(c,npc.ModNPC.GetType().Name)+"Mod"+Idglib.ColorText(c,(npc.ModNPC.Mod).GetType().Name),200,250,250);
                 lastmod=currentmode;
             }}
             }
@@ -601,9 +603,9 @@ namespace Idglibrary
             for (int i = 0; i < BuffLoader.BuffCount; i++)
             {
                 ModBuff modbuff = BuffLoader.GetBuff(i);
-                if (modbuff!=null && (filtertomod < 0 || modbuff.mod==ModLoader.GetMod(filtertomod))){
-                string currentmode=(modbuff.mod).GetType().Name;
-                if (lastmod!=(modbuff.mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
+                if (modbuff!=null && (filtertomod < 0 || modbuff.Mod==ModLoader.GetMod(filtertomod.ToString()))){
+                string currentmode=(modbuff.Mod).GetType().Name;
+                if (lastmod!=(modbuff.Mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
                 Main.NewText(Idglib.ColorText(c,modbuff.DisplayName.GetDefault())+"Class"+Idglib.ColorText(c,modbuff.GetType().Name)+"Mod"+Idglib.ColorText(c,currentmode),200,250,250);
                 lastmod=currentmode;
             }}
@@ -613,15 +615,15 @@ namespace Idglibrary
             for (int i = 0; i < NPCLoader.NPCCount; i++)
             {
                 ModNPC modnpc = NPCLoader.GetNPC(i);
-                if (modnpc!=null && (filtertomod < 0 || modnpc.mod==ModLoader.GetMod(filtertomod))){
-                string currentmode=(modnpc.mod).GetType().Name;
-                if (lastmod!=(modnpc.mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
+                if (modnpc!=null && (filtertomod < 0 || modnpc.Mod==ModLoader.GetMod(filtertomod.ToString()))){
+                string currentmode=(modnpc.Mod).GetType().Name;
+                if (lastmod!=(modnpc.Mod).GetType().Name){morecolorwhendifferentmod+=0.27f; c=newcolor(morecolorwhendifferentmod);}
                 Main.NewText(Idglib.ColorText(c,modnpc.DisplayName.GetDefault())+"Class"+Idglib.ColorText(c,modnpc.GetType().Name)+"Mod"+Idglib.ColorText(c,currentmode),200,250,250);
                 lastmod=currentmode;
             }}
             }
             if (filtertomod>0)
-            Main.NewText("filtered to: "+ModLoader.GetMod(modid).DisplayName,255,255,255);
+            Main.NewText("filtered to: "+ModLoader.GetMod(modid.ToString()).DisplayName,255,255,255);
         return true;
     }
 
@@ -636,66 +638,67 @@ namespace Idglibrary
         }
         public override void SetDefaults()
         {
-            item.damage = 15;
-            item.melee = true;
-            item.width = 40;
-            item.height = 40;
-            item.useTime = 10;
-            item.useAnimation = 10;
-            item.useStyle = 1;
-            item.knockBack = 6;
-            item.value = Item.sellPrice(0, 0, 0, 0);
-            item.rare = 9;
-            item.UseSound = SoundID.Item1;
-            item.autoReuse = true;
-            item.useTurn = true;
-            item.shoot = mod.ProjectileType("DebugWeapon3Projectile");
+            Item.damage = 15;
+            Item.DamageType = DamageClass.Melee;
+            Item.width = 40;
+            Item.height = 40;
+            Item.useTime = 10;
+            Item.useAnimation = 10;
+            Item.useStyle = 1;
+            Item.knockBack = 6;
+            Item.value = Item.sellPrice(0, 0, 0, 0);
+            Item.rare = 9;
+            Item.UseSound = SoundID.Item1;
+            Item.autoReuse = true;
+            Item.useTurn = true;
+            Item.shoot = Mod.Find<ModProjectile>("DebugWeapon3Projectile").Type;
         }
 
         public override string Texture
         {
-            get { return "Terraria/Item_" + 5; }
+            get { return "Terraria/Images/Item_" + 5; }
         }
 
-        public override bool Shoot(Player player, ref Vector2 position, ref float speedX, ref float speedY, ref int type, ref int damage, ref float knockBack)
+        public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockBack)
         {
-        Vector2 thespeed=new Vector2(Main.mouseX+Main.screenPosition.X,Main.mouseY+Main.screenPosition.Y)-player.Center;thespeed.Normalize();
-        thespeed=thespeed.RotatedByRandom(MathHelper.ToRadians(5));
-        speedX=thespeed.X*15f;speedY=thespeed.Y*15f;
+            Vector2 thespeed=new Vector2(Main.mouseX+Main.screenPosition.X,Main.mouseY+Main.screenPosition.Y)-player.Center;thespeed.Normalize();
+            thespeed=thespeed.RotatedByRandom(MathHelper.ToRadians(5));
+            velocity.X= thespeed.X*15f; velocity.Y= thespeed.Y*15f;
 
-        return true;
+            return true;
         }
 
     }
 
-        public class DebugWeapon3Projectile : ModProjectile
+    public class DebugWeapon3Projectile : ModProjectile
     {
 
         public override void SetDefaults()
         {
-            projectile.width = 30;
-            projectile.height = 30;
+            Projectile.width = 30;
+            Projectile.height = 30;
             //projectile.aiStyle = 1;
-            projectile.friendly = true;
-            projectile.timeLeft = 600;
-            projectile.tileCollide=false;
+            Projectile.friendly = true;
+            Projectile.timeLeft = 600;
+            Projectile.tileCollide=false;
         }
 
-                public override string Texture
+        public override string Texture
         {
-            get { return "Terraria/Item_" + 5; }
+            get { return "Terraria/Images/Item_" + 5; }
         }
-public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
-{
-Vector2 drawPos = projectile.Center - Main.screenPosition;
+        public override bool PreDraw(ref Color lightColor)
+        {
+            Vector2 drawPos = Projectile.Center - Main.screenPosition;
 
-Texture2D tex=Main.itemTexture[5];
+            Texture2D tex= TextureAssets.Item[5].Value;
 
-Idglib.DrawSkeletronLikeArms(spriteBatch,tex,projectile.Center,Main.player[projectile.owner].Center,0f,0f,(projectile.velocity.X > 0f ? 1f : -1f));
+            //spriteBatch was removed from PreDraw
+            //Idglib.DrawSkeletronLikeArms(spriteBatch,tex,Projectile.Center,Main.player[Projectile.owner].Center,0f,0f,(Projectile.velocity.X > 0f ? 1f : -1f));
 
-spriteBatch.Draw(Main.itemTexture[5], drawPos, null, lightColor, Main.rand.Next(-360,360)/100, new Vector2(16,16),new Vector2(2f,2f), SpriteEffects.None, 0f);
-return false;
-}
+            //spriteBatch.Draw(TextureAssets.Item[5].Value, drawPos, null, lightColor, Main.rand.Next(-360,360)/100, new Vector2(16,16),new Vector2(2f,2f), SpriteEffects.None, 0f);
+            return false;
+        }
 
     }
 
