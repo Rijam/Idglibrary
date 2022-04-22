@@ -24,7 +24,7 @@ namespace Idglibrary.Buffs
 			if (player.buffTime[buffIndex] > 180)
 			{
 				if (player.CountItem(ItemID.RedPotion) < 1)
-					player.QuickSpawnItem(player.GetItemSource_OpenItem(Type), ItemID.RedPotion);
+					player.QuickSpawnItem(player.GetSource_OpenItem(Type), ItemID.RedPotion);
 			}
 			if (player.buffTime[buffIndex] == 2)
 			{
