@@ -89,13 +89,18 @@ namespace Idglibrary.Buffs
 
 		public override string Texture => "Idglibrary/Buffs/SoulDrain";
 
+		public static readonly SoundStyle UseSound = new("Terraria/Sounds/Item_84", 84, 1)
+		{
+			Volume = 0.5f,
+			PitchRange = (0.5f, 0.5f)
+		};
 		public override void Update(Player player, ref int buffIndex)
 		{
 			IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
 			if (idgplayer.Damnation < 1)
 			{
 				idgplayer.Damnation = 15;
-				SoundEngine.PlaySound(SoundID.Item, (int)player.position.X, (int)player.position.Y, 84, 0.5f, -0.5f);
+				SoundEngine.PlaySound(UseSound, player.position);
 
 			}
 			if (idgplayer.Damnation < 10)

@@ -138,7 +138,7 @@ namespace Idglibrary
         public override bool? UseItem(Player player)
         {
 
-            FieldInfo sounds = typeof(SoundLoader).GetField("sounds", BindingFlags.Static | BindingFlags.NonPublic);
+            FieldInfo sounds = typeof(SoundStyle).GetField("sounds", BindingFlags.Static | BindingFlags.NonPublic);
             IDictionary<SoundType, IDictionary<string, int>> sounds2 = (IDictionary<SoundType, IDictionary<string, int>>)sounds.GetValue(null);
 
             IDictionary<string, int> sounds3 = sounds2[SoundType.Music];
@@ -210,12 +210,13 @@ namespace Idglibrary
         {
             IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(SoundID.Shatter, player.Center);
             IdgPlayer.AddRadiationDebuff(player,600,0);
             return true;
         }
     }
-        public class DebugPotion2: IdgDebugItem
+
+    public class DebugPotion2: IdgDebugItem
     {
         public override void SetStaticDefaults()
         {
@@ -243,16 +244,16 @@ namespace Idglibrary
 
         public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
+            //IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(SoundID.Shatter, player.Center);
             IdgPlayer.AddRadiationDebuff(player,600,1);
 
             return true;
         }
     }
 
-        public class DebugPotion3: IdgDebugItem
+    public class DebugPotion3: IdgDebugItem
     {
         public override void SetStaticDefaults()
         {
@@ -280,9 +281,9 @@ namespace Idglibrary
 
         public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
+            //IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(SoundID.Shatter, player.Center);
             IdgPlayer.AddRadiationDebuff(player,600,2);
 
             return true;
@@ -317,9 +318,9 @@ namespace Idglibrary
 
         public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
+            //IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(SoundID.Shatter, player.Center);
             player.AddBuff(ModContent.BuffType<Buffs.BossFightPurity>(), 600);
 
             return true;
@@ -353,9 +354,9 @@ namespace Idglibrary
 
         public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
+            //IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(SoundID.Shatter, player.Center);
             player.AddBuff(ModContent.BuffType<Buffs.CurseOfRed>(), 600);
 
             return true;
@@ -389,9 +390,9 @@ namespace Idglibrary
 
         public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
+            //IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(SoundID.Shatter, player.Center);
             player.AddBuff(ModContent.BuffType<Buffs.SoulDrain>(), 600);
 
             return true;
@@ -425,9 +426,9 @@ namespace Idglibrary
 
         public override bool? UseItem(Player player)
         {
-            IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
+            //IdgPlayer idgplayer = player.GetModPlayer<IdgPlayer>();
             //bdplayer.DyeStrengthBoost+=2;
-            SoundEngine.PlaySound(13, (int)player.position.X, (int)player.position.Y, 0);
+            SoundEngine.PlaySound(SoundID.Shatter, player.Center);
             player.AddBuff(ModContent.BuffType<Buffs.NullExceptionDebuff>(), 300);
 
             return true;
@@ -527,10 +528,11 @@ namespace Idglibrary
             Item.autoReuse = false;
         }
 
-                public override bool AltFunctionUse(Player player)
+        public override bool AltFunctionUse(Player player)
         {
             return true;
         }
+
 
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
@@ -545,7 +547,7 @@ namespace Idglibrary
             if (mode>modesstring.Length-1)
             mode=0;
             altfired=true;
-            SoundEngine.PlaySound(21, (int)player.position.X, (int)player.position.Y, 17);
+            SoundEngine.PlaySound(SoundID.Tink, player.Center);
             Main.NewText("Now Displaying: "+modesstring[mode],200,200,200);
             return false;
             }else{altfired=false;return true;}
@@ -554,7 +556,7 @@ namespace Idglibrary
 
         private Color newcolor(float value){
 
-        return Main.hslToRgb((float)((Main.GlobalTimeWrappedHourly /15)+value)%1f, 0.75f, 0.35f);
+            return Main.hslToRgb((float)((Main.GlobalTimeWrappedHourly /15)+value)%1f, 0.75f, 0.35f);
 
         }
 
@@ -624,8 +626,8 @@ namespace Idglibrary
             }
             if (filtertomod>0)
             Main.NewText("filtered to: "+ModLoader.GetMod(modid.ToString()).DisplayName,255,255,255);
-        return true;
-    }
+            return true;
+        }
 
     }
 

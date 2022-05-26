@@ -196,11 +196,11 @@ namespace Idglibrary
 
         public override void OnHitPlayer(NPC npc, Player player, int damage, bool crit)
         {
-            if (Main.netMode == 0) {
+            if (Main.netMode == NetmodeID.SinglePlayer) {
                 for (int num172 = 0; num172 < buffid.Count; num172 += 1) {
                     player.AddBuff(buffid[num172], bufftime[num172], true);
                 } }
-            if (Main.netMode == 1) {
+            if (Main.netMode == NetmodeID.MultiplayerClient) {
                 //Idglib.Chat("(client) get server of this npc test",255,255,255);
                 ModPacket packet = Idglib.Instance.GetPacket();
                 packet.Write((byte)MessageType.IdgMessage);
@@ -592,7 +592,7 @@ namespace Idglibrary
         //universal network-supported message broadcaster (see Sharkvern's message for how to use)
         public static void Chat(string message, byte color1, byte color2, byte color3)
         {
-            if (Main.netMode != 2)
+            if (Main.netMode != NetmodeID.Server)
             {
                 string text = message;
                 Main.NewText(text, color1, color3, color3);
@@ -663,7 +663,7 @@ namespace Idglibrary
 
         public static void NewItemClient(int x, int y, int width, int height, int item)
         {
-            if (Main.netMode != 1) {
+            if (Main.netMode != NetmodeID.MultiplayerClient) {
                 Item.NewItem(null, x, y, width, height, item); //Passing null for IEntitySource will work, but it may break other functionality
             } else {
                 ModPacket packet = Idglib.Instance.GetPacket();
@@ -679,13 +679,13 @@ namespace Idglibrary
         }
 
         //universal network-supported sound maker (client only, might not work in network games, no idea)
-        public static void PlaySound(int type, Vector2 here, int style)
+        /*public static void PlaySound(int type, Vector2 here, int style)
         {
-            if (Main.netMode != 2)
+            if (Main.netMode != NetmodeID.Server)
             {
-                SoundEngine.PlaySound(type, (int)here.X, (int)here.Y, style);
+                SoundEngine.PlaySound(type, here.Center, style);
             }
-        }
+        }*/
 
 
 
@@ -979,7 +979,7 @@ namespace Idglibrary
                     Main.player[ply].AddBuff(buff, time, true);
                 }
 
-                if (type2 == 1 && Main.netMode == 2) {
+                if (type2 == 1 && Main.netMode == NetmodeID.Server) {
                     //Idglib.Chat("(server) Someone got hit, send info to server",255,255,255);
                     int playerid = reader.ReadInt32();
                     int npcid = reader.ReadInt32();
@@ -1215,7 +1215,7 @@ namespace Idglibrary
 
         public static void AddOnHitBuff(int npcid, int buff, int time)
         {
-            if (Main.netMode != 1) {
+            if (Main.netMode != NetmodeID.MultiplayerClient) {
                 Main.npc[npcid].GetGlobalNPC<IdgNPCs>().IdgAddBuff(buff, time);
             } }
 
@@ -1402,7 +1402,7 @@ namespace Idglibrary
 
         public static void AddOnHitBuff(int projectileid, int buff, int time)
         {
-            if (Main.netMode != 1) {
+            if (Main.netMode != NetmodeID.MultiplayerClient) {
                 Main.projectile[projectileid].GetGlobalProjectile<IdgProjectiles>().IdgAddBuff(buff, time);
             } }
 
